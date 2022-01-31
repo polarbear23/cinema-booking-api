@@ -78,8 +78,26 @@ const createMovie = async (req, res, next) => {
 
 }
 
+const getSingleMovie = async (req, res) => {
+    const { idorname } = req.params;
+    const movie = await prisma.movie.findMany({
+        where: {
+            OR: [{
+                title: idorname
+            },
+            {
+                id: isNaN(parseInt(idorname)) ? 0 : parseInt(idorname)
+            }
+            ]
+        }
+    })
+    console.log("getoneMovie", movie)
+    res.json({ data: movie })
+}
+
 module.exports = {
     getMovies,
     filterMovies,
-    createMovie
+    createMovie,
+    getSingleMovie
 };
