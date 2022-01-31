@@ -36,7 +36,50 @@ const filterMovies = async (req, res) => {
 
 }
 
+const createMovie = async (req, res, next) => {
+    const {
+        title,
+        runtimeMins,
+        screenings
+    } = req.body;
+
+    const movieExists = await prisma.movie.findMany({
+        where: {
+            title: title
+        }
+    });
+    console.log("movie already exists", movieExists);
+    try {
+        if (movieExists.length > 0) {
+            throw "movie already Exists"
+        }
+
+        const createdMovie = await prisma.movie.create({
+            data: {
+                title: title,
+                runtimeMins: runtimeMins,
+                screenings: screenings ? {
+                    createMany:
+                    {
+                        data: screenings
+                    }
+                } : {
+
+                }
+            }
+        }
+        )
+        res.json({ data: createdMovie });
+    }
+    catch (err) {
+        console.error(err);
+        next(err);
+    }
+
+}
+
 module.exports = {
     getMovies,
-    filterMovies
+    filterMovies,
+    createMovie
 };
