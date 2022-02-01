@@ -78,26 +78,68 @@ const createMovie = async (req, res, next) => {
 
 }
 
-const getSingleMovie = async (req, res) => {
+const getSingleMovie = async (req, res, next) => {
     const { idorname } = req.params;
-    const movie = await prisma.movie.findMany({
-        where: {
-            OR: [{
-                title: idorname
-            },
-            {
-                id: isNaN(parseInt(idorname)) ? 0 : parseInt(idorname)
+    try {
+        const movie = await prisma.movie.findMany({
+            where: {
+                OR: [{
+                    title: idorname
+                },
+                {
+                    id: isNaN(parseInt(idorname)) ? 0 : parseInt(idorname)
+                }
+                ]
             }
-            ]
+        })
+        if (movie.length < 1) {
+            throw "movie not found"
+        }
+        console.log("getoneMovie", movie)
+        res.json({ data: movie })
+    }
+
+    catch (error) {
+        console.error(error);
+        next(error);
+    }
+}
+
+const updateSingleMovie = async (req, res) => {
+    console.log("update")
+    const { id } = req.params;
+    const { title, runtimeMins, screenings } = req.body;
+    for (let i = 0; i < screenings.length; i++) {
+        const updatedScreens = await prisma.screening.update({
+            where: {
+                id: screenings[i].id
+            },
+            data: {
+                screenId: screenings[i].screenId,
+                startsAt: screenings[i].startsAt
+            }
+        })
+    }
+    const updatedMovie = await prisma.movie.update({
+        where: {
+            id: parseInt(id)
+        },
+        data: {
+            title: title,
+            runtimeMins: runtimeMins,
+        },
+        include: {
+            screenings: true
         }
     })
-    console.log("getoneMovie", movie)
-    res.json({ data: movie })
+
+    res.json({ data: updatedMovie })
 }
 
 module.exports = {
     getMovies,
     filterMovies,
     createMovie,
-    getSingleMovie
+    getSingleMovie,
+    updateSingleMovie
 };
