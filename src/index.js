@@ -23,11 +23,13 @@ const customerRouter = require('./routers/customer');
 const movieRouter = require('./routers/movie');
 const screenRouter = require('./routers/screen');
 const ticketRouter = require('./routers/ticket');
+const reviewRouter = require('./routers/review')
+
 app.use('/customer', customerRouter);
 app.use('/movies', movieRouter);
 app.use('/screen', screenRouter)
 app.use('/ticket', ticketRouter)
-
+app.use('/review', reviewRouter)
 
 
 

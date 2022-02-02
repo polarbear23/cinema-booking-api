@@ -4,6 +4,16 @@ const prisma = require('../utils/prisma');
 const getMovies = async (req, res) => {
     if (!req.query.filter) {
         const movies = await prisma.movie.findMany({
+            where: {
+                screenings: {
+                    some: {
+                        startsAt: {
+                            gte: new Date()
+                        }
+                    }
+                }
+
+            },
             include: {
                 screenings: true
             }
