@@ -19,13 +19,13 @@ const getMovies = async (req, res) => {
             }
         })
         console.log("getMovies", movies);
-        res.json({ data: movies });
+        return res.json({ data: movies });
     }
-    if (req.query.filter) {
-        const movies = await filterMovies(req, res);
-        console.log("getfilteredMovies", movies);
-        res.json({ data: movies });
-    }
+
+    const movies = await filterMovies(req, res);
+    console.log("getfilteredMovies", movies);
+    return res.json({ data: movies });
+
 }
 
 const filterMovies = async (req, res) => {
@@ -46,7 +46,7 @@ const filterMovies = async (req, res) => {
 
 }
 
-const createMovie = async (req, res, next) => {
+const createMovie = async (req, res) => {
     const {
         title,
         runtimeMins,
@@ -83,12 +83,14 @@ const createMovie = async (req, res, next) => {
     }
     catch (err) {
         console.error(err);
-        next(err);
+        res.status(400).send({
+            message: error
+        })
     }
 
 }
 
-const getSingleMovie = async (req, res, next) => {
+const getSingleMovie = async (req, res) => {
     const { idorname } = req.params;
     try {
         const movie = await prisma.movie.findMany({
@@ -111,7 +113,9 @@ const getSingleMovie = async (req, res, next) => {
 
     catch (error) {
         console.error(error);
-        next(error);
+        res.status(400).send({
+            message: error
+        })
     }
 }
 
@@ -119,16 +123,18 @@ const updateSingleMovie = async (req, res) => {
     console.log("update")
     const { id } = req.params;
     const { title, runtimeMins, screenings } = req.body;
-    for (let i = 0; i < screenings.length; i++) {
-        const updatedScreens = await prisma.screening.update({
-            where: {
-                id: screenings[i].id
-            },
-            data: {
-                screenId: screenings[i].screenId,
-                startsAt: screenings[i].startsAt
-            }
-        })
+    if (screenings) {
+        for (let i = 0; i < screenings.length; i++) {
+            const updatedScreens = await prisma.screening.update({
+                where: {
+                    id: screenings[i].id
+                },
+                data: {
+                    screenId: screenings[i].screenId,
+                    startsAt: screenings[i].startsAt
+                }
+            })
+        }
     }
     const updatedMovie = await prisma.movie.update({
         where: {
